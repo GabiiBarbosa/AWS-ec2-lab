@@ -1,0 +1,57 @@
+1. O que é EC2
+- EC2 = Elastic Compute Cloud — serviço de instâncias “virtuais” (máquinas) na nuvem AWS. :contentReference[oaicite:0]{index=0}
+- Permite escolher tipo de instância (CPU, memória, rede), sistema operacional, armazenamento e rede.
+
+2. AMI, Parâmetros Iniciais e Rede
+- AMI (Amazon Machine Image): modelo que define SO, pacotes e configuração básica para criar instâncias.
+- Ao lançar uma instância, você escolhe uma AMI padrão ou personalizada.
+- Você precisa de um par de chaves (chave pública + privada) para permitir conexão via SSH.
+- Configurar **Security Groups** (grupos de segurança) para permitir tráfego nas portas desejadas (por exemplo, porta 22 para SSH, 80 para HTTP).
+
+3. Tipos de Instância e Alocação
+- Diferentes instâncias oferecem diferentes balanços de CPU, memória, rede etc.
+- A instância roda num **Availability Zone (AZ)** dentro de uma região.
+- Recursos como IP público, volumes EBS, etc., dependem da configuração dentro da mesma região.
+
+4. Estados da instância
+- **pending**: instância sendo inicializada
+- **running**: instância ativa
+- **shutting-down** e **terminated**: instância em encerramento ou já encerrada
+- **stopped**: instância parada (nos casos em que “stop” for permitido)
+
+5. Encerramento (terminate) vs. Parada (stop)
+- **Terminate**: apaga a instância, libera recursos, “destrói” a máquina virtual. :contentReference[oaicite:1]{index=1}
+- **Stop**: desliga a instância, mas mantém volumes EBS (em muitos casos), permitindo reiniciar depois. :contentReference[oaicite:2]{index=2}
+- Quando uma instância é encerrada, dados armazenados em volumes temporários (instance store) são perdidos. :contentReference[oaicite:3]{index=3}
+- Para volumes EBS, depende do atributo `DeleteOnTermination` para saber se o volume raiz será apagado ou mantido. :contentReference[oaicite:4]{index=4}
+
+6. Processo de Encerramento no Console
+- Acesse o console AWS → serviço EC2
+- Vá em “Instances”
+- Selecione a instância
+- Clique em **Instance state → Terminate instance**
+- Confirme
+- Aguarde o estado mudar para `shutting-down` → `terminated` :contentReference[oaicite:5]{index=5}
+
+7. Possíveis problemas e verificações
+- Verificar se você está na **região correta** (instâncias só aparecem na região em que foram criadas)
+- Verificar filtros aplicados na tela de instâncias (às vezes “running only” oculta instâncias paradas ou terminadas)
+- Verificar permissões IAM: se você não tiver permissão `ec2:TerminateInstances`, não poderá encerrar
+- Verificar se a instância tem “termination protection” habilitado (proteção contra encerramento acidental)
+- Consultar logs no **CloudTrail** para ver histórico de operações `RunInstances` ou `TerminateInstances` :contentReference[oaicite:6]{index=6}
+
+8. Persistência de recursos após encerramento
+- Elastic IPs (IPs elásticos) associados à instância são **desanexados**, podem ser liberados
+- Volumes EBS que não têm `DeleteOnTermination = true` podem persistir e gerar custo
+- Dados em volumes temporários e RAM são perdidos
+
+9. Boas práticas
+- Sempre encerrar instâncias quando não estiver em uso para evitar cobranças
+- Liberar elastic IPs não usados
+- Deletar volumes EBS órfãos que não estão mais conectados
+- Usar tags (nome, projeto, pessoa) para identificar instâncias
+- Documentar cada etapa com prints no laboratório
+
+10. Observações finais
+- Quando encerro uma instância, ela permanece visível por um tempo até desaparecer da lista. :contentReference[oaicite:7]{index=7}
+- Se a instância ficar “stuck” em `shutting-down`, pode haver problema de infraestrutura ou falha; AWS efetua limpeza automática eventualmente. :contentReference[oaicite:8]{index=8}
